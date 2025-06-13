@@ -10,6 +10,8 @@
  *      | (E)          - Product 05
  *      ;
  */
+
+/* Recursive-descent */
  
  function term(a) {
      return GetNextToken() == a;
