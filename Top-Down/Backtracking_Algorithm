@@ -1,0 +1,81 @@
+```js
+/**
+ * 
+ *   E -> T         E1 - Product 01
+ *      | T + E     E2 - Product 02
+ *      ;
+ * 
+ *   T -> a            - Product 03
+ *      | a * T        - Product 04
+ *      | (E)          - Product 05
+ *      ;
+ */
+ 
+ function term(a) {
+     return GetNextToken() == a;
+ }
+ 
+ function GetNextToken() {
+     while (source[cursor] === ' ') cursor++;
+     var nextToken = source[cursor];
+     cursor++;
+     return nextToken;
+ }
+ 
+ var savedCursor;
+ 
+ function saveCursor() {
+     savedCursor = cursor;
+ }
+ 
+ function backtrack() {
+     cursor = savedCursor;
+ }
+ 
+ function E() {
+     return    (saveCursor(), E1()) 
+            || (backtrack(), saveCursor(), E2());
+ }
+ 
+ function E1() {
+     return T();
+ }
+ 
+ function E2() {
+     return T() && term('+') && E();
+ }
+
+ function T() {
+     return    (saveCursor(), T2()) 
+           || (backtrack(), saveCursor(), T3()) 
+           || (backtrack(), saveCursor(), T1());
+ }
+ 
+ function T1() {
+     return term('a');
+ }
+ 
+ function T2() {
+     return term('a') && term('*') && T(); 
+ }
+ 
+ function T3() {
+     return term('(') && E() && term(')'); 
+ }
+ 
+var source;
+var cursor;
+
+function parse(s) {
+    source = s;
+    cursor = 0;
+    return E() && cursor == source.length;
+}
+
+console.log('(a)', parse('(a)'));
+
+console.log('-a', parse('-a')); 
+
+console.log('a * a', parse('a * a'));
+
+```
