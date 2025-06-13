@@ -1,0 +1,137 @@
+```js
+/**
+ * 
+ *   E -> T         
+ *      | T + E     
+ *      ;
+ * 
+ *   T -> a            
+ *      | a * T        
+ *      | (E)          
+ *      ;
+ */
+
+// Left Elimination Is Required
+
+/**
+ * 
+ *   E -> T E';        
+ *   
+ *   E' -> + E
+ *       | e
+ *       ;
+ *
+ *   T -> a T'
+ *      | (E)
+ *      ;
+ *
+ *      T' -> * T
+ *      | e
+ *      ;
+ */
+
+function term(expected) {
+
+     return GetNextToken() === expected;
+
+ }
+
+ function GetNextToken() {
+
+     while(source[count] == ' ') count++;
+
+     return source[count];
+
+ }
+
+ function E() {
+
+     return T() && _E();
+
+ }
+
+ function _E() {
+
+     if(term('+')) { // Concept of lookahead tokens
+
+         count++;
+
+         return E();
+
+     }
+
+     return true;
+
+ }
+
+ function T() {
+
+     if(term('a')) { 
+
+         count++;
+
+         return _T();
+
+     }
+
+     if(term('(')) {
+
+        count++;
+
+        if(!E() || !term(')')) return false;
+
+        return count++;
+
+     }
+
+     return false;
+
+ }
+
+ function _T() {
+
+     if(term('*')) {
+
+         count++;
+
+         return T();
+
+     }
+
+     return true;
+
+ }
+
+ var count;
+
+ var source;
+
+ function parse(s) {
+
+     source = s;
+
+     count = 0;
+
+     return E() && count === source.length;
+
+ }
+
+console.log("a * a : " + parse("a * a"))
+
+console.log("a + a * a : " + parse("a + a * a"))
+
+console.log("a + a * a + a : " + parse("a + a * a + a"))
+
+console.log("(a * a + a) : " + parse("(a * a  + a)"))
+
+console.log("(a * (a * a)) : " + parse("(a * (a * a))"))
+
+console.log("(a * a + a) + (a * a) : " + parse("(a * a + a) + (a * a)"))
+
+console.log("(a * a + a) * (a * a) : " + parse("(a * a + a) * (a * a)"))
+
+console.log("(a * a + a) + a : " + parse("(a * a + a) + a"))
+
+console.log("(a * a + a) * a : " + parse("(a * a + a) * a"))
+
+console.log("a + (a + a) * a : " + parse("a + (a + a) + a"))
