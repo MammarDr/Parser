@@ -1,0 +1,265 @@
+```js
+// Map of Non-Terminals (NT) and Tokens to Production Rules
+
+// Example grammar:
+
+// E  -> T _E
+
+// _E -> + E | ε
+
+// T  -> F _T
+
+// _T -> * T | ε
+
+// F  -> ( E ) | num
+
+  
+  
+  
+
+const productionMap = {
+
+  'E': {
+
+    'LPAREN': ['_E', 'T'],
+
+    'NUMBER': ['_E', 'T']
+
+  },
+
+  '_E': {
+
+    'PLUS': ['_E', 'T', 'PLUS'],
+
+    'RPAREN': [' '],      // epsilon
+
+    'EOF': [' ']    
+
+  },
+
+  'T': {
+
+    'LPAREN': ['_T', 'F'],
+
+    'NUMBER': ['_T', 'F']
+
+  },
+
+  '_T': {
+
+    'MUL': ['_T', 'F', 'MUL'],
+
+    'PLUS': [' '],    
+
+    'RPAREN': [' '],    
+
+    'EOF': [' ']    
+
+  },
+
+  'F': {
+
+    'LPAREN': ['RPAREN', 'E', 'LPAREN'],
+
+    'NUMBER': ['NUMBER']
+
+  }
+
+};
+
+  
+  
+
+const NonTerminalSet = ['E', '_E', 'T', '_T', 'F'];
+
+  
+
+function isNonTerminal(value) {
+
+  return NonTerminalSet.indexOf(value) != -1;
+
+}
+
+  
+
+function tokenize(input) {
+
+  
+
+  const tokens = [];
+
+  const tokenSpec = [
+
+    { regex: /^\s+/, type: null }, // Skip whitespace
+
+    { regex: /^\d+/, type: 'NUMBER' },
+
+    { regex: /^\+/, type: 'PLUS' },
+
+    { regex: /^\*/, type: 'MUL' },
+
+    { regex: /^\(/, type: 'LPAREN' },
+
+    { regex: /^\)/, type: 'RPAREN' },
+
+  ];
+
+  
+
+  while (input.length > 0) {
+
+    let matched = false;
+
+  
+
+    for (const { regex, type } of tokenSpec) {
+
+      const match = input.match(regex);
+
+      if (match) {
+
+        matched = true;
+
+        if (type) {
+
+          tokens.push(type);
+
+        }
+
+        input = input.slice(match[0].length);
+
+        break;
+
+      }
+
+    }
+
+  
+
+    if (!matched) {
+
+      throw new Error('Unexpected token: ' + input[0]);
+
+    }
+
+  }
+
+  
+
+  tokens.push('EOF');
+
+  
+
+  return tokens;
+
+}
+
+  
+
+ function parse(s) {
+
+  
+
+    var source = tokenize(s);
+
+  
+
+    var count = 0;  
+
+  
+
+    var stack = [];
+
+  
+
+    stack.push('EOF');
+
+  
+
+    stack.push('E');
+
+    while(true) {
+
+  
+
+    var top = stack.at(stack.length - 1);;
+
+  
+
+    var  lookahead = source[count];
+
+  
+
+     if(top == 'EOF' && lookahead == 'EOF') break;
+
+  
+
+     if(lookahead == 'EOF') {
+
+      if(productionMap[top]['EOF'] == null) return false;
+
+       stack.pop();
+
+       continue;
+
+      }
+
+  
+
+     if(isNonTerminal(top)) {
+
+  
+
+      var rule = productionMap[top][lookahead];
+
+       if(rule == null) return false;
+
+  
+
+      if (rule.length === 1 && rule[0] === ' ') {
+
+        stack.pop(); // epsilon — do nothing, just pop
+
+      }  
+
+       else {
+
+        stack.pop();
+
+         for(var i = 0; i < rule.length; i++) {
+
+          stack.push(rule[i]);
+
+          }
+
+        }
+
+       continue;
+
+      }
+
+  
+
+     if(lookahead !== top) return false;
+
+     stack.pop();
+
+     count++;  
+
+    }
+
+  
+
+    return true;
+
+}
+
+  
+
+console.log("7: " + parse("7"));
+console.log("7 + 3: " + parse("7 + 3"));
+console.log("4 * 5: " + parse("4 * 5"));
+console.log("2 + 3 * 4: " + parse("2 + 3 * 4"));
+console.log("( 7 ): " + parse("( 7 )"));
+console.log("( 2 + 3 ) * 5: " + parse("( 2 + 3 ) * 5"));
+```
